@@ -666,23 +666,41 @@ body {
     height: 40px;
     background: var(--border-color);
 }
-.map-connector.horizontal {
-    width: 60%;
-    height: 2px;
-    background: var(--border-color);
-}
-.map-connector.horizontal-bottom {
-    width: 60%;
-    height: 2px;
-    background: var(--border-color);
-    margin-top: -2px; /* overlap with cols */
-}
 .map-row {
     display: flex;
-    width: 60%;
-    justify-content: space-between;
+    justify-content: center;
+    width: 100%;
 }
-.map-col { display: flex; flex-direction: column; align-items: center; }
+.map-col { 
+    position: relative;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 0 20px;
+}
+
+/* Pseudo elements for perfect horizontal connecting lines */
+.map-col::before, .map-col::after {
+    content: '';
+    position: absolute;
+    height: 2px;
+    background: var(--border-color);
+    z-index: 1;
+}
+
+.map-col::before { top: 0; }
+.map-col::after { bottom: 0; }
+
+.map-col:first-child::before, .map-col:first-child::after {
+    left: 50%; width: 50%;
+}
+.map-col:last-child::before, .map-col:last-child::after {
+    right: 50%; width: 50%;
+}
+.map-col:not(:first-child):not(:last-child)::before,
+.map-col:not(:first-child):not(:last-child)::after {
+    left: 0; width: 100%;
+}
 
 /* AI Investigation */
 .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
