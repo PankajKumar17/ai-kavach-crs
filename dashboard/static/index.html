@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Kavach Dashboard</title>
+</head>
+<body>
+    <h1>AI Kavach Dashboard</h1>
+    <div id="content">Loading...</div>
+    <script>
+        // Simple fetch script
+        fetch('/api/runs/test_run/summary')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('content').innerHTML = `
+                    <p>Total Bugs Processed: ${data.total_bugs_processed}</p>
+                    <p>Total Bugs Resolved: ${data.total_bugs_resolved}</p>
+                `;
+            })
+            .catch(e => {
+                document.getElementById('content').innerText = 'Error or no run selected.';
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: ai-kavach-dashboard
+    env: docker
+    dockerfilePath: ./Dockerfile.dashboard
+    plan: free
+    healthCheckPath: /health

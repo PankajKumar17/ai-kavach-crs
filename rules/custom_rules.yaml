@@ -1,0 +1,29 @@
+rules:
+  - id: custom-unchecked-buffer-copy
+    patterns:
+      - pattern: strcpy($DEST, $SRC)
+      - pattern-not-inside: |
+          if (strlen($SRC) < $SIZE) { ... }
+    message: "Unchecked buffer copy detected. Ensure the source buffer is bounds-checked before copying."
+    severity: ERROR
+    languages:
+      - c
+      - cpp
+  - id: custom-integer-overflow-allocation
+    patterns:
+      - pattern: malloc($X * $Y)
+    message: "Potential integer overflow before allocation. Arithmetic on allocation sizes can wrap around."
+    severity: WARNING
+    languages:
+      - c
+      - cpp
+  - id: custom-unchecked-array-indexing
+    patterns:
+      - pattern: $ARR[$IDX]
+      - pattern-not-inside: |
+          if ($IDX < $BOUND) { ... }
+    message: "Unchecked array indexing detected."
+    severity: WARNING
+    languages:
+      - c
+      - cpp

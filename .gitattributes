@@ -1,0 +1,6 @@
+# Normalize line endings to LF in the repo
+* text=auto eol=lf
+
+# Shell scripts must stay LF
+*.sh text eol=lf
+*.ps1 text eol=crlf

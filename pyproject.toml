@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai_kavach"
+version = "0.1.0"
+description = "AI Kavach Cyber Reasoning System"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "ruff",
+    "anthropic",
+    "requests",
+    "fastapi",
+    "uvicorn",
+    "python-dotenv"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ai_kavach"]

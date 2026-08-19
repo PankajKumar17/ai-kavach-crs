@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy requirements
+COPY pyproject.toml .
+# Normally we would install hatchling and build, but for simplicity we can just pip install the required libs
+RUN pip install --no-cache-dir fastapi uvicorn pydantic
+
+# Copy the dashboard code
+COPY dashboard/ /app/dashboard/
+
+# Setup some dummy run data
+RUN mkdir -p /app/runs/example_run
+RUN echo '{"total_bugs_processed": 10, "total_bugs_resolved": 8, "tokens_per_verified_patch": 1200.5, "average_time_per_verified_patch_s": 45.2, "percent_resolved_without_llm": 25.0, "total_tokens_used": 10000, "total_time_s": 500.0, "peak_memory_mb": 150.0}' > /app/runs/example_run/summary.json
+
+ENV PYTHONPATH=/app
+EXPOSE 8000
+
+CMD ["uvicorn", "dashboard.app:app", "--host", "0.0.0.0", "--port", "8000"]

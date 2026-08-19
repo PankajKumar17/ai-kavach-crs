@@ -1,0 +1,3 @@
+AFL-FUZZ ARGS: -i C:\Users\panka\AppData\Local\Temp\pytest-of-panka\pytest-5\test_run_fuzz_campaign_finds_c0\seed -o runs\test_run_1\afl_out -- C:\Users\panka\OneDrive\Desktop\hack\ai-kavach-crs\targets\sample_vuln\target_bin.bat @@ 
+AFL-FUZZ ARGS: -i foo -o runs\manual_test 
+AFL-FUZZ ARGS: -i foo -o runs\manual_test 
