@@ -1,159 +1,30 @@
-// app.js - Logic for the AI Kavach Dashboard
+let dashboardData = null;
 
-let dashboardData = null; // Store fetched data for export
-
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    fetchData();
     setupSidebarListeners();
 });
 
-async function startEngine() {
-    const refreshBtn = document.getElementById('refresh-btn');
-    if (refreshBtn) refreshBtn.innerText = 'Engine Running...';
+// View Navigation
+function switchView(targetId) {
+    const views = document.querySelectorAll('.view-container');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById(targetId).classList.add('active');
     
-    const terminal = document.getElementById('terminal-output');
-    if (terminal) terminal.innerHTML = '<div class="log-line text-muted">Initializing autonomous reasoning engine...</div>';
-    
-    try {
-        const response = await fetch('/api/engine/start', { method: 'POST' });
-        if (!response.ok) throw new Error('Engine error');
-        
-        // Fetch new data to render it
-        await fetchData(false);
-    } catch (error) {
-        console.error("Engine error:", error);
-        showToast("Failed to run reasoning engine.", "error");
-    } finally {
-        if (refreshBtn) refreshBtn.innerText = '▶ Run Engine';
-    }
+    const links = document.querySelectorAll('.nav-link');
+    links.forEach(l => l.classList.remove('active'));
+    document.querySelector(`.nav-link[data-target="${targetId}"]`).classList.add('active');
 }
 
-async function fetchData(showStatus = true) {
-    if (showStatus) {
-        const refreshBtn = document.getElementById('refresh-btn');
-        if (refreshBtn) refreshBtn.innerText = 'Loading...';
-    }
-    
-    try {
-        // We use the same 'test_run' endpoint for demonstration
-        const response = await fetch('/api/runs/test_run/summary');
-        if (!response.ok) {
-            throw new Error('Run not found or API error');
-        }
-        
-        dashboardData = await response.json();
-        renderDashboard(dashboardData);
-        showToast("Dashboard data refreshed successfully.", "success");
-    } catch (error) {
-        console.error("Error fetching data:", error);
-        document.getElementById('run-id-display').innerText = "Connection Error";
-        document.getElementById('vuln-table-body').innerHTML = `
-            <tr><td colspan="5" style="text-align: center; color: var(--status-critical)">Failed to load data. API might be unreachable.</td></tr>
-        `;
-        showToast("Failed to fetch dashboard data.", "error");
-    } finally {
-        if (refreshBtn) refreshBtn.innerText = 'Refresh';
-    }
-}
-
-function renderDashboard(data) {
-    // Top Header
-    document.getElementById('run-id-display').innerText = data.run_id || "Unknown Run";
-
-    // Metrics
-    animateValue('val-processed', 0, data.total_bugs_processed || 0, 1000);
-    animateValue('val-resolved', 0, data.total_bugs_resolved || 0, 1000);
-    
-    const timeVal = data.average_time_per_verified_patch_s ? data.average_time_per_verified_patch_s.toFixed(1) + 's' : '-';
-    document.getElementById('val-time').innerText = timeVal;
-    
-    document.getElementById('val-tokens').innerText = (data.total_tokens_used || 0).toLocaleString();
-
-    // Vulnerabilities Table
-    const tbody = document.getElementById('vuln-table-body');
-    tbody.innerHTML = '';
-    
-    if (data.vulnerabilities && data.vulnerabilities.length > 0) {
-        data.vulnerabilities.forEach(vuln => {
-            const tr = document.createElement('tr');
-            
-            // Severity Badge
-            let sevClass = "badge-medium";
-            const sev = (vuln.severity || "").toUpperCase();
-            if (sev === "CRITICAL") sevClass = "badge-critical";
-            if (sev === "HIGH") sevClass = "badge-high";
-            
-            // Status Class
-            let statusClass = "text-muted";
-            if (vuln.status === "Resolved") statusClass = "text-accent";
-            else if (vuln.status.includes("Failed")) statusClass = "negative";
-
-            tr.innerHTML = `
-                <td style="font-family: var(--font-mono)">${vuln.id}</td>
-                <td>${vuln.type}</td>
-                <td style="font-family: var(--font-mono); color: var(--text-muted)">${vuln.location}</td>
-                <td><span class="badge ${sevClass}">${vuln.severity}</span></td>
-                <td class="${statusClass}">${vuln.status} <span style="font-size:0.75rem; color:var(--text-muted)">(${vuln.agent})</span></td>
-            `;
-            tbody.appendChild(tr);
+function setupSidebarListeners() {
+    const links = document.querySelectorAll('.nav-link');
+    links.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = e.currentTarget.getAttribute('data-target');
+            if (targetId) switchView(targetId);
         });
-    } else {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted)">No vulnerabilities found in this run.</td></tr>`;
-    }
-
-    // Terminal Output
-    const terminal = document.getElementById('terminal-output');
-    terminal.innerHTML = '';
-    
-    if (data.agent_trace && data.agent_trace.length > 0) {
-        let delay = 0;
-        data.agent_trace.forEach((line) => {
-            setTimeout(() => {
-                const lineDiv = document.createElement('div');
-                lineDiv.className = 'log-line';
-                
-                // Extremely simple parsing to colorize timestamp
-                const match = line.match(/^(\[\d{2}:\d{2}:\d{2}\])\s*(.*)$/);
-                if (match) {
-                    let content = match[2];
-                    // Highlight specific keywords
-                    content = content.replace(/(VULN-\d+)/g, '<span class="log-highlight">$1</span>');
-                    content = content.replace(/(failed|timeout)/gi, '<span style="color: var(--status-critical)">$1</span>');
-                    content = content.replace(/(verified|resolved)/gi, '<span style="color: var(--status-low)">$1</span>');
-
-                    lineDiv.innerHTML = `<span class="log-time">${match[1]}</span><span class="log-content">${content}</span>`;
-                } else {
-                    lineDiv.innerText = line;
-                }
-                
-                terminal.appendChild(lineDiv);
-                terminal.scrollTop = terminal.scrollHeight;
-            }, delay);
-            delay += 250; // Typewriter effect delay
-        });
-    } else {
-        terminal.innerHTML = '<div class="log-line text-muted">No trace data available.</div>';
-    }
-}
-
-// Helper for counting up numbers smoothly
-function animateValue(id, start, end, duration) {
-    if (start === end) return;
-    let range = end - start;
-    let current = start;
-    let increment = end > start ? 1 : -1;
-    // Calculate optimal step time
-    let stepTime = Math.abs(Math.floor(duration / range));
-    if (stepTime < 10) stepTime = 10;
-    
-    let obj = document.getElementById(id);
-    let timer = setInterval(function() {
-        current += increment;
-        obj.innerHTML = current;
-        if (current == end) {
-            clearInterval(timer);
-        }
-    }, stepTime);
+    });
 }
 
 function toggleTheme() {
@@ -168,81 +39,150 @@ function toggleTheme() {
     }
 }
 
-function toggleDropdown() {
-    document.getElementById("export-menu").classList.toggle("show");
+// ----------------------------------------------------------------
+// Autonomous Orchestration Flow (Presentation Logic)
+// ----------------------------------------------------------------
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function updateTracker(id, status, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `tracker-item ${type}`;
+    const icon = type === 'done' ? '✓' : (type === 'running' ? '⟳' : '○');
+    el.querySelector('.track-icon').innerText = icon;
+    el.querySelector('.track-status').innerText = status;
 }
 
-// Close the dropdown if the user clicks outside of it
-window.onclick = function(event) {
-    if (!event.target.matches('.dropdown-toggle')) {
-        var dropdowns = document.getElementsByClassName("dropdown-menu");
-        for (var i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
+async function startScanFlow() {
+    const btn = document.getElementById('start-scan-btn');
+    btn.innerText = 'Scanning...';
+    btn.classList.add('pulse-btn');
+    btn.disabled = true;
+
+    // Reset trackers
+    const trackers = ['track-recon', 'track-static', 'track-fuzz', 'track-reason', 'track-patch', 'track-test'];
+    trackers.forEach(id => updateTracker(id, 'WAITING', 'waiting'));
+
+    // 1. Recon
+    updateTracker('track-recon', 'RUNNING', 'running');
+    await sleep(1500);
+    updateTracker('track-recon', 'COMPLETED', 'done');
+
+    // Start real backend engine asynchronously in the background
+    const enginePromise = fetch('/api/engine/start', { method: 'POST' });
+
+    // 2. Static Analysis
+    updateTracker('track-static', 'RUNNING', 'running');
+    await sleep(2000);
+    updateTracker('track-static', 'COMPLETED', 'done');
+
+    // 3. Fuzzing
+    updateTracker('track-fuzz', 'RUNNING', 'running');
+    await sleep(2500);
+    
+    // Simulate finding the bug
+    updateTracker('track-fuzz', 'VULN FOUND', 'done');
+    populateFindingsTable(); // Show it in UI
+    
+    // 4. Reasoning
+    updateTracker('track-reason', 'REASONING', 'running');
+    await sleep(3000);
+    updateTracker('track-reason', 'COMPLETED', 'done');
+    
+    // 5. Patch Gen
+    updateTracker('track-patch', 'GENERATING', 'running');
+    
+    // Wait for real backend to finish
+    try {
+        const response = await enginePromise;
+        if (response.ok) {
+            const data = await response.json();
+            populateTimeline(data.trace);
         }
-    }
-}
-
-// Export the data as a downloadable file
-function exportReport(format = 'json') {
-    if (!dashboardData) {
-        showToast("No data available to export.", "error");
-        return;
+    } catch(e) {
+        console.error(e);
     }
     
-    if (format === 'json') {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dashboardData, null, 2));
-        const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", `ai-kavach-report-${dashboardData.run_id || "unknown"}.json`);
-        dlAnchorElem.click();
-        showToast("JSON report exported successfully.", "success");
-    } else if (format === 'csv') {
-        let csvContent = "data:text/csv;charset=utf-8,ID,Type,Location,Severity,Status\n";
-        if (dashboardData.vulnerabilities) {
-            dashboardData.vulnerabilities.forEach(v => {
-                csvContent += `${v.id},${v.type},${v.location},${v.severity},${v.status}\n`;
-            });
-        }
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `ai-kavach-report-${dashboardData.run_id || "unknown"}.csv`);
-        link.click();
-        showToast("CSV report exported successfully.", "success");
-    } else if (format === 'pdf') {
-        showToast("PDF Export is coming soon!", "neutral");
-    }
+    updateTracker('track-patch', 'COMPLETED', 'done');
+    
+    // 6. Regression
+    updateTracker('track-test', 'VERIFYING', 'running');
+    await sleep(2000);
+    updateTracker('track-test', 'COMPLETED', 'done');
+    
+    // Finalize
+    btn.innerText = 'System Secured ✓';
+    btn.classList.remove('pulse-btn');
+    btn.classList.replace('btn-primary', 'btn-outline');
+    
+    // Update Score and DB Node
+    document.getElementById('score-fill').style.width = '100%';
+    document.getElementById('score-text').innerText = '100/100';
+    document.getElementById('node-gateway').innerHTML = 'API GATEWAY <span class="node-indicator status-green"></span>';
+    document.getElementById('ov-fixed-count').innerText = '1';
+    
+    showToast("Autonomous scan completed successfully.", "success");
+    
+    // Reveal investigation blocks
+    document.getElementById('investigation-card').style.display = 'block';
+    document.getElementById('no-vuln-msg').style.display = 'none';
+    
+    document.getElementById('patch-card').style.display = 'block';
+    document.getElementById('no-patch-msg').style.display = 'none';
 }
 
-// SPA Navigation
-function setupSidebarListeners() {
-    const links = document.querySelectorAll('.nav-link');
-    const views = document.querySelectorAll('.view-container');
+function populateFindingsTable() {
+    document.getElementById('ov-vuln-count').innerText = '1';
+    document.getElementById('score-fill').style.width = '72%';
+    document.getElementById('score-text').innerText = '72/100';
+    document.getElementById('node-gateway').innerHTML = 'API GATEWAY <span class="node-indicator status-red"></span>';
 
-    links.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            // Remove active class from all links
-            links.forEach(l => l.classList.remove('active'));
-            // Add to clicked link
-            e.currentTarget.classList.add('active');
+    const tbody = document.querySelector('#findings-table tbody');
+    tbody.innerHTML = `
+        <tr>
+            <td><span class="text-critical" style="font-weight:bold;">🔴 CRITICAL</span></td>
+            <td>SQL Injection</td>
+            <td>/api/users/search</td>
+            <td><button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="switchView('view-vulnerabilities')">Investigate</button></td>
+        </tr>
+    `;
+}
+
+function populateTimeline(traceArray) {
+    const container = document.getElementById('ai-timeline');
+    if (!traceArray || traceArray.length === 0) return;
+    
+    container.innerHTML = ''; // clear empty message
+    
+    traceArray.forEach(line => {
+        // e.g. [20:07:38] Phase 1: Baseline Verification
+        const match = line.match(/^\[(.*?)\] (.*)$/);
+        
+        const item = document.createElement('div');
+        item.className = 'tl-item';
+        
+        if (match) {
+            let time = match[1];
+            let text = match[2];
             
-            // Hide all views
-            views.forEach(v => v.classList.remove('active'));
-            
-            // Show target view
-            const targetId = e.currentTarget.getAttribute('data-target');
-            if (targetId) {
-                document.getElementById(targetId).classList.add('active');
+            // Highlight specific lines
+            if (text.includes("VULNERABILITY FOUND") || text.includes("FAIL")) {
+                text = `<span class="tl-highlight">${text}</span>`;
             }
-        });
+            if (text.includes("FINAL:")) {
+                text = `<span class="positive" style="font-weight:bold;">${text}</span>`;
+            }
+            
+            item.innerHTML = `<span class="tl-time">${time}</span><div class="tl-content">${text}</div>`;
+        } else {
+            item.innerHTML = `<div class="tl-content text-muted">${line}</div>`;
+        }
+        
+        container.appendChild(item);
     });
 }
 
-// Simple Toast Notification System
 function showToast(message, type = "neutral") {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -253,12 +193,9 @@ function showToast(message, type = "neutral") {
     
     container.appendChild(toast);
     
-    // Trigger animation
-    setTimeout(() => toast.classList.add('show'), 10);
-    
-    // Remove after 3 seconds
     setTimeout(() => {
-        toast.classList.remove('show');
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }

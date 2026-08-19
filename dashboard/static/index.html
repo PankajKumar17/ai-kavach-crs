@@ -3,38 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Kavach | Cyber Reasoning System</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Custom Styles -->
+    <title>AI Kavach | Autonomous Cyber Reasoning</title>
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="dashboard-layout">
-        <!-- Sidebar -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
         <aside class="sidebar glass-panel">
-            <div class="logo-container">
-                <div class="logo-icon"></div>
+            <div class="sidebar-brand">
+                <div class="brand-logo"></div>
                 <h2>AI Kavach</h2>
             </div>
             <nav class="nav-menu">
-                <a href="#" class="nav-link active" data-target="view-dashboard">
-                    <span class="icon">⊞</span> Dashboard
+                <a href="#" class="nav-link active" data-target="view-overview">
+                    <span class="icon">🏠</span> Overview
+                </a>
+                <a href="#" class="nav-link" data-target="view-attack-surface">
+                    <span class="icon">🗺️</span> Attack Surface
                 </a>
                 <a href="#" class="nav-link" data-target="view-vulnerabilities">
-                    <span class="icon">⚡</span> Vulnerabilities
+                    <span class="icon">🔍</span> Vulnerabilities
                 </a>
-                <a href="#" class="nav-link" data-target="view-agents">
-                    <span class="icon">⚙</span> Agents
+                <a href="#" class="nav-link" data-target="view-timeline">
+                    <span class="icon">🧠</span> AI Agent Timeline
                 </a>
-                <a href="#" class="nav-link" data-target="view-settings">
-                    <span class="icon">🛡</span> Settings
+                <a href="#" class="nav-link" data-target="view-patches">
+                    <span class="icon">🛠️</span> Patches & Verification
                 </a>
             </nav>
+
             <div class="sidebar-footer">
-                <p>Status: <span class="status-indicator online"></span> Online</p>
+                <div class="status-indicator">
+                    <span class="status-dot"></span> Online
+                </div>
             </div>
         </aside>
 
@@ -42,140 +45,240 @@
         <main class="main-content">
             <header class="top-header glass-panel">
                 <div class="header-title">
-                    <h1>Campaign Run: <span class="highlight" id="run-id-display">Loading...</span></h1>
-                    <p class="subtitle">Real-time vulnerability triage and patching</p>
+                    <h1>Target: <span class="highlight">Defence-Web-01</span></h1>
+                    <p class="subtitle">Autonomous security assessment in progress</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-outline" id="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
-                    <button class="btn btn-outline" id="refresh-btn" onclick="startEngine()" style="color: var(--accent-primary); border-color: var(--accent-primary);">▶ Run Engine</button>
-                    <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" id="export-btn" onclick="toggleDropdown()">Export Report ▼</button>
-                        <div class="dropdown-menu glass-panel" id="export-menu">
-                            <a href="#" onclick="exportReport('json')">JSON Format</a>
-                            <a href="#" onclick="exportReport('csv')">CSV Format</a>
-                            <a href="#" onclick="exportReport('pdf')">PDF Format</a>
-                        </div>
-                    </div>
+                    <button class="btn btn-primary pulse-btn" id="start-scan-btn" onclick="startScanFlow()">▶ Start Autonomous Scan</button>
                 </div>
             </header>
 
-            <div id="view-dashboard" class="view-container active content-scroll">
-                <!-- Metrics Grid -->
-                <section class="metrics-grid">
-                    <div class="metric-card glass-panel fade-in staggered-1">
-                        <div class="metric-header">Bugs Processed</div>
-                        <div class="metric-value" id="val-processed">-</div>
-                        <div class="metric-trend positive">↑ 12% vs last run</div>
+            <!-- 1. OVERVIEW VIEW -->
+            <div id="view-overview" class="view-container active content-scroll">
+                <section class="overview-grid">
+                    
+                    <!-- Target Infrastructure Stats -->
+                    <div class="overview-card glass-panel fade-in staggered-1">
+                        <h3>Target Infrastructure</h3>
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <div class="stat-label">Services</div>
+                                <div class="stat-val">24</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Vulnerabilities</div>
+                                <div class="stat-val text-critical" id="ov-vuln-count">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Fixed</div>
+                                <div class="stat-val positive" id="ov-fixed-count">0</div>
+                            </div>
+                        </div>
+                        <div class="security-score">
+                            <div class="score-header">
+                                <span>Security Score</span>
+                                <span id="score-text">100/100</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="score-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="metric-card glass-panel fade-in staggered-2">
-                        <div class="metric-header">Bugs Resolved</div>
-                        <div class="metric-value text-accent" id="val-resolved">-</div>
-                        <div class="metric-trend positive">↑ 8% vs last run</div>
-                    </div>
-                    <div class="metric-card glass-panel fade-in staggered-3">
-                        <div class="metric-header">Avg. Time to Patch</div>
-                        <div class="metric-value" id="val-time">-</div>
-                        <div class="metric-trend negative">↓ 4.2s vs last run</div>
-                    </div>
-                    <div class="metric-card glass-panel fade-in staggered-4">
-                        <div class="metric-header">Total Tokens Used</div>
-                        <div class="metric-value" id="val-tokens">-</div>
-                        <div class="metric-trend neutral">Stable</div>
+
+                    <!-- Autonomous Agent Tracker -->
+                    <div class="overview-card glass-panel fade-in staggered-2">
+                        <h3>Autonomous Agent</h3>
+                        <ul class="tracker-list" id="agent-tracker">
+                            <li class="tracker-item waiting" id="track-recon">
+                                <span class="track-icon">○</span> Reconnaissance <span class="track-status">WAITING</span>
+                            </li>
+                            <li class="tracker-item waiting" id="track-static">
+                                <span class="track-icon">○</span> Static Analysis <span class="track-status">WAITING</span>
+                            </li>
+                            <li class="tracker-item waiting" id="track-fuzz">
+                                <span class="track-icon">○</span> Fuzzing <span class="track-status">WAITING</span>
+                            </li>
+                            <li class="tracker-item waiting" id="track-reason">
+                                <span class="track-icon">○</span> Vulnerability Reasoning <span class="track-status">WAITING</span>
+                            </li>
+                            <li class="tracker-item waiting" id="track-patch">
+                                <span class="track-icon">○</span> Patch Generation <span class="track-status">WAITING</span>
+                            </li>
+                            <li class="tracker-item waiting" id="track-test">
+                                <span class="track-icon">○</span> Regression Testing <span class="track-status">WAITING</span>
+                            </li>
+                        </ul>
                     </div>
                 </section>
 
-                <div class="two-col-grid">
-                    <!-- Vulnerabilities Table -->
-                    <section class="vuln-section glass-panel fade-in staggered-5">
-                        <div class="section-header">
-                            <h3>Active Vulnerabilities</h3>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="vuln-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Type</th>
-                                        <th>Location</th>
-                                        <th>Severity</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="vuln-table-body">
-                                    <!-- Populated by JS -->
-                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted)">Loading data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                <section class="findings-section glass-panel fade-in staggered-3 mt-20">
+                    <div class="section-header">
+                        <h3>Recent Findings</h3>
+                    </div>
+                    <table class="data-table" id="findings-table">
+                        <thead>
+                            <tr>
+                                <th>Severity</th>
+                                <th>Vulnerability</th>
+                                <th>Component</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4" class="text-center text-muted" style="padding: 20px;">No findings yet. Start a scan.</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
 
-                    <!-- Agent Trace Console -->
-                    <section class="trace-section glass-panel fade-in staggered-6">
-                        <div class="section-header">
-                            <h3>Subagent Trace Log</h3>
-                            <div class="terminal-controls">
-                                <span class="dot red"></span>
-                                <span class="dot yellow"></span>
-                                <span class="dot green"></span>
+            <!-- 2. ATTACK SURFACE VIEW -->
+            <div id="view-attack-surface" class="view-container content-scroll">
+                <section class="map-section glass-panel fade-in">
+                    <div class="section-header">
+                        <h3>Infrastructure Map</h3>
+                    </div>
+                    <div class="infra-map">
+                        <div class="map-node root-node">INTERNET</div>
+                        <div class="map-connector vertical"></div>
+                        
+                        <div class="map-node gateway-node" id="node-gateway">API GATEWAY <span class="node-indicator status-green"></span></div>
+                        <div class="map-connector vertical"></div>
+                        <div class="map-connector horizontal"></div>
+                        
+                        <div class="map-row">
+                            <div class="map-col">
+                                <div class="map-node service-node" id="node-auth">AUTH API <span class="node-indicator status-green"></span></div>
+                                <div class="map-connector vertical"></div>
+                            </div>
+                            <div class="map-col">
+                                <div class="map-node service-node" id="node-user">USER API <span class="node-indicator status-green"></span></div>
+                                <div class="map-connector vertical"></div>
+                            </div>
+                            <div class="map-col">
+                                <div class="map-node service-node" id="node-file">FILE API <span class="node-indicator status-green"></span></div>
+                                <div class="map-connector vertical"></div>
                             </div>
                         </div>
-                        <div class="terminal-window" id="terminal-output">
-                            <!-- Populated by JS -->
-                            <div class="log-line text-muted">Awaiting connection to agent trace stream...</div>
+                        
+                        <div class="map-connector horizontal-bottom"></div>
+                        <div class="map-connector vertical"></div>
+                        <div class="map-node db-node" id="node-db">DATABASE <span class="node-indicator status-green"></span></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 3. VULNERABILITIES VIEW (AI Investigation) -->
+            <div id="view-vulnerabilities" class="view-container content-scroll">
+                <section class="investigation-card glass-panel fade-in" id="investigation-card" style="display: none;">
+                    <div class="inv-header">
+                        <h2>Vulnerability <span class="highlight">#KAVACH-027</span></h2>
+                        <h3 class="text-critical">CRITICAL — SQL Injection</h3>
+                    </div>
+                    
+                    <div class="inv-grid">
+                        <div class="inv-col">
+                            <h4>Target</h4>
+                            <p class="code-text">/api/users/search (vulnerable.py)</p>
+                            
+                            <h4 class="mt-20">Discovered By</h4>
+                            <p>Fuzzer + Static Analysis + LLM Reasoning</p>
                         </div>
-                    </section>
+                        <div class="inv-col">
+                            <h4>AI Analysis Pipeline</h4>
+                            <ul class="analysis-flow">
+                                <li>Fuzzer detected abnormal database response</li>
+                                <li class="arrow">↓</li>
+                                <li>Static analyzer identified unsafe query construction</li>
+                                <li class="arrow">↓</li>
+                                <li>Dynamic analysis reproduced the behavior</li>
+                                <li class="arrow">↓</li>
+                                <li>AI correlated all 3 findings</li>
+                                <li class="arrow">↓</li>
+                                <li class="highlight-node">Root cause identified</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="evidence-box mt-20">
+                        <h4>Evidence</h4>
+                        <div class="terminal-window">
+                            <div class="log-line">Request:</div>
+                            <div class="log-line">GET /api/users/search?username=' OR '1'='1</div>
+                            <br>
+                            <div class="log-line text-critical">Response: 500 Internal Server Error (Table Dumped)</div>
+                        </div>
+                    </div>
+
+                    <div class="action-bar mt-20 text-right">
+                        <button class="btn btn-primary" onclick="switchView('view-patches')">View AI Patch →</button>
+                    </div>
+                </section>
+                <div id="no-vuln-msg" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    Run a scan to investigate vulnerabilities.
                 </div>
             </div>
 
-            <div id="view-vulnerabilities" class="view-container content-scroll">
-                <section class="vuln-section glass-panel fade-in">
+            <!-- 4. TIMELINE VIEW -->
+            <div id="view-timeline" class="view-container content-scroll">
+                <section class="timeline-section glass-panel fade-in">
                     <div class="section-header">
-                        <h3>All Vulnerabilities</h3>
-                        <input type="text" class="input-field" placeholder="Search CVEs or paths...">
+                        <h3>AI Activity & Reasoning Timeline</h3>
                     </div>
-                    <div style="padding: 24px; color: var(--text-muted); text-align: center;">
-                        <p>Detailed Vulnerability Table View</p>
-                        <p style="font-size: 0.8rem; margin-top: 10px;">(Uses data fetched from API)</p>
-                    </div>
-                </section>
-            </div>
-
-            <div id="view-agents" class="view-container content-scroll">
-                <section class="agents-grid">
-                    <div class="metric-card glass-panel fade-in staggered-1">
-                        <div class="metric-header">RCA Agent</div>
-                        <div class="metric-value positive">Active</div>
-                        <div class="metric-trend text-muted">Analyzing core dumps...</div>
-                    </div>
-                    <div class="metric-card glass-panel fade-in staggered-2">
-                        <div class="metric-header">LLM Patcher</div>
-                        <div class="metric-value text-accent">Idle</div>
-                        <div class="metric-trend text-muted">Awaiting next RCA...</div>
-                    </div>
-                    <div class="metric-card glass-panel fade-in staggered-3">
-                        <div class="metric-header">Critic Agent</div>
-                        <div class="metric-value neutral">Sleeping</div>
-                        <div class="metric-trend text-muted">-</div>
+                    <div class="timeline-container" id="ai-timeline">
+                        <!-- Populated by JS -->
+                        <div class="timeline-empty text-muted">Awaiting scan initiation...</div>
                     </div>
                 </section>
             </div>
 
-            <div id="view-settings" class="view-container content-scroll">
-                <section class="settings-form glass-panel fade-in">
-                    <div class="section-header"><h3>Configuration</h3></div>
-                    <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
-                        <div>
-                            <label style="display:block; margin-bottom: 8px;">OpenAI API Key</label>
-                            <input type="password" class="input-field" value="sk-mocked-key-********" style="width: 100%; max-width: 400px;">
+            <!-- 5. PATCHES VIEW -->
+            <div id="view-patches" class="view-container content-scroll">
+                <section class="patch-section glass-panel fade-in" id="patch-card" style="display: none;">
+                    <div class="section-header">
+                        <h3>AI Generated Patch</h3>
+                    </div>
+                    
+                    <div class="diff-container mt-20">
+                        <div class="diff-pane before">
+                            <div class="diff-header text-critical">BEFORE (Vulnerable)</div>
+                            <pre><code id="code-before">query = f"SELECT * FROM users WHERE username = '{username}'"
+cursor.execute(query)</code></pre>
                         </div>
-                        <div>
-                            <label style="display:block; margin-bottom: 8px;">Auto-Apply Patches</label>
-                            <input type="checkbox" checked>
+                        <div class="diff-pane after">
+                            <div class="diff-header positive">AFTER (AI Patched)</div>
+                            <pre><code id="code-after">query = "SELECT * FROM users WHERE username = ?"
+cursor.execute(query, (username,))</code></pre>
                         </div>
-                        <button class="btn btn-primary" style="width: 120px; margin-top: 10px;" onclick="showToast('Settings Saved successfully!', 'success')">Save Settings</button>
+                    </div>
+                    
+                    <div class="reasoning-box mt-20">
+                        <h4>AI Reasoning</h4>
+                        <p>Parameterized queries prevent user-controlled input from being interpreted as SQL syntax, neutralizing the injection vector.</p>
+                    </div>
+
+                    <div class="validation-card mt-20">
+                        <h3>Patch Validation & Regression Testing</h3>
+                        <div class="validation-grid">
+                            <div class="val-item">Original Exploit Test <span class="val-result text-critical">❌ BEFORE</span></div>
+                            <div class="val-item">Exploit Reproduction <span class="val-result positive">✅ BLOCKED</span></div>
+                            <div class="val-item">Unit Tests <span class="val-result positive">✅ 124/124</span></div>
+                            <div class="val-item">Security Tests <span class="val-result positive">✅ 31/31</span></div>
+                            <div class="val-item">Fuzz Tests <span class="val-result positive">✅ 10,000 cases</span></div>
+                            <div class="val-item highlight-item">Regression Check <span class="val-result positive">✅ PASSED</span></div>
+                        </div>
+                        
+                        <div class="final-status mt-20 text-center">
+                            <h2 class="positive">VULNERABILITY FIXED ✓</h2>
+                            <p class="text-muted">Confidence: 97.8%</p>
+                        </div>
                     </div>
                 </section>
+                <div id="no-patch-msg" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    Run a scan to generate patches.
+                </div>
             </div>
+
         </main>
     </div>
 
