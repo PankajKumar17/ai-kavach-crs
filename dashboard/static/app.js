@@ -1,10 +1,16 @@
 // app.js - Logic for the AI Kavach Dashboard
 
+let dashboardData = null; // Store fetched data for export
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchData();
+    setupSidebarListeners();
 });
 
 async function fetchData() {
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) refreshBtn.innerText = 'Refreshing...';
+    
     try {
         // We use the same 'test_run' endpoint for demonstration
         const response = await fetch('/api/runs/test_run/summary');
@@ -12,14 +18,18 @@ async function fetchData() {
             throw new Error('Run not found or API error');
         }
         
-        const data = await response.json();
-        renderDashboard(data);
+        dashboardData = await response.json();
+        renderDashboard(dashboardData);
+        showToast("Dashboard data refreshed successfully.", "success");
     } catch (error) {
         console.error("Error fetching data:", error);
         document.getElementById('run-id-display').innerText = "Connection Error";
         document.getElementById('vuln-table-body').innerHTML = `
             <tr><td colspan="5" style="text-align: center; color: var(--status-critical)">Failed to load data. API might be unreachable.</td></tr>
         `;
+        showToast("Failed to fetch dashboard data.", "error");
+    } finally {
+        if (refreshBtn) refreshBtn.innerText = 'Refresh';
     }
 }
 
@@ -133,4 +143,60 @@ function toggleTheme() {
         root.setAttribute('data-theme', 'light');
         btn.innerText = '🌙 Dark Mode';
     }
+}
+
+// Export the JSON data as a downloadable file
+function exportReport() {
+    if (!dashboardData) {
+        showToast("No data available to export.", "error");
+        return;
+    }
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dashboardData, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `ai-kavach-report-${dashboardData.run_id || "unknown"}.json`);
+    dlAnchorElem.click();
+    
+    showToast("Report exported successfully.", "success");
+}
+
+// Mock sidebar navigation
+function setupSidebarListeners() {
+    const links = document.querySelectorAll('.nav-link');
+    links.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Remove active class from all
+            links.forEach(l => l.classList.remove('active'));
+            // Add to clicked
+            e.currentTarget.classList.add('active');
+            
+            const sectionName = e.currentTarget.innerText.trim();
+            if (sectionName !== 'Dashboard') {
+                showToast(`${sectionName} view coming soon!`, "neutral");
+            }
+        });
+    });
+}
+
+// Simple Toast Notification System
+function showToast(message, type = "neutral") {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerText = message;
+    
+    container.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }

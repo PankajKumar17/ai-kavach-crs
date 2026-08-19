@@ -47,8 +47,8 @@
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-outline" id="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
-                    <button class="btn btn-outline" onclick="fetchData()">Refresh</button>
-                    <button class="btn btn-primary">Export Report</button>
+                    <button class="btn btn-outline" id="refresh-btn" onclick="fetchData()">Refresh</button>
+                    <button class="btn btn-primary" id="export-btn" onclick="exportReport()">Export Report</button>
                 </div>
             </header>
 
@@ -121,6 +121,9 @@
             </div>
         </main>
     </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
 
     <!-- Main Application Script -->
     <script src="/static/app.js"></script>
