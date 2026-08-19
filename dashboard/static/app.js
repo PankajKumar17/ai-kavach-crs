@@ -7,9 +7,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSidebarListeners();
 });
 
-async function fetchData() {
+async function startEngine() {
     const refreshBtn = document.getElementById('refresh-btn');
-    if (refreshBtn) refreshBtn.innerText = 'Refreshing...';
+    if (refreshBtn) refreshBtn.innerText = 'Engine Running...';
+    
+    const terminal = document.getElementById('terminal-output');
+    if (terminal) terminal.innerHTML = '<div class="log-line text-muted">Initializing autonomous reasoning engine...</div>';
+    
+    try {
+        const response = await fetch('/api/engine/start', { method: 'POST' });
+        if (!response.ok) throw new Error('Engine error');
+        
+        // Fetch new data to render it
+        await fetchData(false);
+    } catch (error) {
+        console.error("Engine error:", error);
+        showToast("Failed to run reasoning engine.", "error");
+    } finally {
+        if (refreshBtn) refreshBtn.innerText = '▶ Run Engine';
+    }
+}
+
+async function fetchData(showStatus = true) {
+    if (showStatus) {
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) refreshBtn.innerText = 'Loading...';
+    }
     
     try {
         // We use the same 'test_run' endpoint for demonstration

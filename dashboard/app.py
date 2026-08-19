@@ -43,6 +43,48 @@ def get_run_summary(run_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+import subprocess
+import sys
+
+@app.post("/api/engine/start")
+def start_engine():
+    engine_path = DASHBOARD_DIR.parent / "engine" / "orchestrator.py"
+    vuln_path = DASHBOARD_DIR.parent / "engine" / "target_app" / "vulnerable.py"
+    
+    try:
+        # 1. Force the file to be vulnerable again for the demo loop
+        vuln_code = vuln_path.read_text(encoding='utf-8')
+        vuln_code = vuln_code.replace(
+            "query = \"SELECT * FROM users WHERE username = ?\"\n    \n    try:\n        cursor.execute(query, (username,))", 
+            "query = f\"SELECT * FROM users WHERE username = '{username}'\"\n    \n    try:\n        cursor.execute(query)"
+        )
+        vuln_path.write_text(vuln_code, encoding='utf-8')
+        
+        # 2. Run the orchestrator backend
+        result = subprocess.run([sys.executable, str(engine_path)], capture_output=True, text=True, timeout=20)
+        trace_log = result.stdout.splitlines()
+        
+        # 3. Update summary.json with the REAL trace
+        summary_file = RUNS_DIR / "test_run" / "summary.json"
+        if summary_file.exists():
+            data = json.loads(summary_file.read_text(encoding='utf-8'))
+            data["agent_trace"] = trace_log
+            
+            # Update mock vulnerability status based on engine success
+            if "FINAL: Vulnerability fixed successfully! [PASS]" in result.stdout:
+                data["vulnerabilities"][0]["status"] = "Resolved"
+                data["vulnerabilities"][0]["severity"] = "CRITICAL"
+                data["total_bugs_resolved"] = 12 + 1
+            else:
+                data["vulnerabilities"][0]["status"] = "Failed"
+                
+            summary_file.write_text(json.dumps(data, indent=2), encoding='utf-8')
+            
+        return {"status": "success", "trace": trace_log}
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 from fastapi import Request
 @app.get("/{full_path:path}")
 def catch_all(request: Request, full_path: str):
