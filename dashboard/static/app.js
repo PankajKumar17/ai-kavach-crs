@@ -145,36 +145,75 @@ function toggleTheme() {
     }
 }
 
-// Export the JSON data as a downloadable file
-function exportReport() {
+function toggleDropdown() {
+    document.getElementById("export-menu").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+    if (!event.target.matches('.dropdown-toggle')) {
+        var dropdowns = document.getElementsByClassName("dropdown-menu");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
+
+// Export the data as a downloadable file
+function exportReport(format = 'json') {
     if (!dashboardData) {
         showToast("No data available to export.", "error");
         return;
     }
     
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dashboardData, null, 2));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `ai-kavach-report-${dashboardData.run_id || "unknown"}.json`);
-    dlAnchorElem.click();
-    
-    showToast("Report exported successfully.", "success");
+    if (format === 'json') {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dashboardData, null, 2));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", `ai-kavach-report-${dashboardData.run_id || "unknown"}.json`);
+        dlAnchorElem.click();
+        showToast("JSON report exported successfully.", "success");
+    } else if (format === 'csv') {
+        let csvContent = "data:text/csv;charset=utf-8,ID,Type,Location,Severity,Status\n";
+        if (dashboardData.vulnerabilities) {
+            dashboardData.vulnerabilities.forEach(v => {
+                csvContent += `${v.id},${v.type},${v.location},${v.severity},${v.status}\n`;
+            });
+        }
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `ai-kavach-report-${dashboardData.run_id || "unknown"}.csv`);
+        link.click();
+        showToast("CSV report exported successfully.", "success");
+    } else if (format === 'pdf') {
+        showToast("PDF Export is coming soon!", "neutral");
+    }
 }
 
-// Mock sidebar navigation
+// SPA Navigation
 function setupSidebarListeners() {
     const links = document.querySelectorAll('.nav-link');
+    const views = document.querySelectorAll('.view-container');
+
     links.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            // Remove active class from all
+            // Remove active class from all links
             links.forEach(l => l.classList.remove('active'));
-            // Add to clicked
+            // Add to clicked link
             e.currentTarget.classList.add('active');
             
-            const sectionName = e.currentTarget.innerText.trim();
-            if (sectionName !== 'Dashboard') {
-                showToast(`${sectionName} view coming soon!`, "neutral");
+            // Hide all views
+            views.forEach(v => v.classList.remove('active'));
+            
+            // Show target view
+            const targetId = e.currentTarget.getAttribute('data-target');
+            if (targetId) {
+                document.getElementById(targetId).classList.add('active');
             }
         });
     });
