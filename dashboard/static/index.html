@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
+    <div class="dashboard-layout">
         <!-- Sidebar Navigation -->
         <aside class="sidebar glass-panel">
-            <div class="sidebar-brand">
-                <div class="brand-logo"></div>
+            <div class="logo-container">
+                <div class="logo-icon"></div>
                 <h2>AI Kavach</h2>
             </div>
             <nav class="nav-menu">
@@ -35,9 +35,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="status-indicator">
-                    <span class="status-dot"></span> Online
-                </div>
+                <span class="status-indicator online"></span> System Online
             </div>
         </aside>
 
@@ -116,19 +114,21 @@
                     <div class="section-header">
                         <h3>Recent Findings</h3>
                     </div>
-                    <table class="data-table" id="findings-table">
-                        <thead>
-                            <tr>
-                                <th>Severity</th>
-                                <th>Vulnerability</th>
-                                <th>Component</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="4" class="text-center text-muted" style="padding: 20px;">No findings yet. Start a scan.</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="vuln-table" id="findings-table">
+                            <thead>
+                                <tr>
+                                    <th>Severity</th>
+                                    <th>Vulnerability</th>
+                                    <th>Component</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="4" class="text-center text-muted" style="padding: 20px;">No findings yet. Start a scan.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
             </div>
 
