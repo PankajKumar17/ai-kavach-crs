@@ -1,24 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AI Kavach Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Kavach | Cyber Reasoning System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>AI Kavach Dashboard</h1>
-    <div id="content">Loading...</div>
-    <script>
-        // Simple fetch script
-        fetch('/api/runs/test_run/summary')
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById('content').innerHTML = `
-                    <p>Total Bugs Processed: ${data.total_bugs_processed}</p>
-                    <p>Total Bugs Resolved: ${data.total_bugs_resolved}</p>
-                `;
-            })
-            .catch(e => {
-                document.getElementById('content').innerText = 'Error or no run selected.';
-            });
-    </script>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="logo-container">
+                <div class="logo-icon"></div>
+                <h2>AI Kavach</h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-link active">
+                    <span class="icon">⊞</span> Dashboard
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="icon">⚡</span> Vulnerabilities
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="icon">⚙</span> Agents
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="icon">🛡</span> Settings
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Status: <span class="status-indicator online"></span> Online</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header glass-panel">
+                <div class="header-title">
+                    <h1>Campaign Run: <span class="highlight" id="run-id-display">Loading...</span></h1>
+                    <p class="subtitle">Real-time vulnerability triage and patching</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline" id="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+                    <button class="btn btn-outline" onclick="fetchData()">Refresh</button>
+                    <button class="btn btn-primary">Export Report</button>
+                </div>
+            </header>
+
+            <div class="content-scroll">
+                <!-- Metrics Grid -->
+                <section class="metrics-grid">
+                    <div class="metric-card glass-panel fade-in staggered-1">
+                        <div class="metric-header">Bugs Processed</div>
+                        <div class="metric-value" id="val-processed">-</div>
+                        <div class="metric-trend positive">↑ 12% vs last run</div>
+                    </div>
+                    <div class="metric-card glass-panel fade-in staggered-2">
+                        <div class="metric-header">Bugs Resolved</div>
+                        <div class="metric-value text-accent" id="val-resolved">-</div>
+                        <div class="metric-trend positive">↑ 8% vs last run</div>
+                    </div>
+                    <div class="metric-card glass-panel fade-in staggered-3">
+                        <div class="metric-header">Avg. Time to Patch</div>
+                        <div class="metric-value" id="val-time">-</div>
+                        <div class="metric-trend negative">↓ 4.2s vs last run</div>
+                    </div>
+                    <div class="metric-card glass-panel fade-in staggered-4">
+                        <div class="metric-header">Total Tokens Used</div>
+                        <div class="metric-value" id="val-tokens">-</div>
+                        <div class="metric-trend neutral">Stable</div>
+                    </div>
+                </section>
+
+                <div class="two-col-grid">
+                    <!-- Vulnerabilities Table -->
+                    <section class="vuln-section glass-panel fade-in staggered-5">
+                        <div class="section-header">
+                            <h3>Active Vulnerabilities</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="vuln-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Type</th>
+                                        <th>Location</th>
+                                        <th>Severity</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vuln-table-body">
+                                    <!-- Populated by JS -->
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted)">Loading data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Agent Trace Console -->
+                    <section class="trace-section glass-panel fade-in staggered-6">
+                        <div class="section-header">
+                            <h3>Subagent Trace Log</h3>
+                            <div class="terminal-controls">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                        </div>
+                        <div class="terminal-window" id="terminal-output">
+                            <!-- Populated by JS -->
+                            <div class="log-line text-muted">Awaiting connection to agent trace stream...</div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Main Application Script -->
+    <script src="/static/app.js"></script>
 </body>
 </html>

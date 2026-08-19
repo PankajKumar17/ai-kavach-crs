@@ -1,0 +1,67 @@
+{
+    "total_bugs_processed": 14,
+    "total_bugs_resolved": 12,
+    "tokens_per_verified_patch": 1845.5,
+    "average_time_per_verified_patch_s": 32.4,
+    "percent_resolved_without_llm": 42.0,
+    "total_tokens_used": 22146,
+    "total_time_s": 388.8,
+    "peak_memory_mb": 412.5,
+    "run_id": "test_run",
+    "status": "completed",
+    "timestamp": "2026-08-19T18:00:00Z",
+    "vulnerabilities": [
+        {
+            "id": "VULN-001",
+            "type": "Heap Buffer Overflow",
+            "location": "src/parser.c:142",
+            "severity": "CRITICAL",
+            "status": "Resolved",
+            "agent": "Template",
+            "time_taken": "1.2s"
+        },
+        {
+            "id": "VULN-002",
+            "type": "Use After Free",
+            "location": "src/network.c:88",
+            "severity": "HIGH",
+            "status": "Resolved",
+            "agent": "LLM Hybrid",
+            "time_taken": "45.1s"
+        },
+        {
+            "id": "VULN-003",
+            "type": "Null Pointer Dereference",
+            "location": "src/auth.c:304",
+            "severity": "MEDIUM",
+            "status": "Resolved",
+            "agent": "LLM Hybrid",
+            "time_taken": "28.5s"
+        },
+        {
+            "id": "VULN-004",
+            "type": "Out of Bounds Read",
+            "location": "src/image_decoder.c:91",
+            "severity": "HIGH",
+            "status": "Failed (Timeout)",
+            "agent": "LLM Hybrid",
+            "time_taken": "120.0s"
+        }
+    ],
+    "agent_trace": [
+        "[18:00:01] Watchdog initialized. Target isolated.",
+        "[18:00:03] Fuzzer discovered 14 unique crash inputs.",
+        "[18:00:05] Triage agent deduplicated crashes to 4 root causes.",
+        "[18:00:06] Template patcher applied deterministic fix for VULN-001 (strcpy -> strncpy).",
+        "[18:00:07] VULN-001 patch verified by regression harness.",
+        "[18:00:10] RCA Agent analyzing core dump for VULN-002...",
+        "[18:00:15] LLM Patcher generating candidates for VULN-002.",
+        "[18:00:25] Critic Agent approved candidate 2 for VULN-002.",
+        "[18:00:52] VULN-002 patch verified by regression harness.",
+        "[18:01:00] RCA Agent analyzing core dump for VULN-003...",
+        "[18:01:10] LLM Patcher generating candidates for VULN-003.",
+        "[18:01:20] VULN-003 patch verified by regression harness.",
+        "[18:01:25] RCA Agent analyzing core dump for VULN-004...",
+        "[18:03:25] Timeout exceeded for VULN-004. Marking as Failed."
+    ]
+}

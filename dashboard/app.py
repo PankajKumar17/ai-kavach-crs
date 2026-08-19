@@ -42,3 +42,8 @@ def get_run_summary(run_id: str):
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi import Request
+@app.get("/{full_path:path}")
+def catch_all(request: Request, full_path: str):
+    return {"path": full_path, "url": str(request.url)}
