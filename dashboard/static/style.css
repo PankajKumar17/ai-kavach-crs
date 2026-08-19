@@ -732,3 +732,31 @@ body {
 .text-right { text-align: right; }
 .text-muted { color: var(--text-muted); }
 .text-critical { color: var(--status-critical); }
+
+/* Light Mode Overrides for Hardcoded Backgrounds */
+[data-theme="light"] .stat-box,
+[data-theme="light"] .tracker-item,
+[data-theme="light"] .analysis-flow li,
+[data-theme="light"] .diff-header,
+[data-theme="light"] .val-item,
+[data-theme="light"] .score-bar {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .map-node,
+[data-theme="light"] .code-text,
+[data-theme="light"] .diff-pane {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .diff-pane pre {
+    color: var(--text-main);
+}
+
+[data-theme="light"] .vuln-table tr:hover td {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .vuln-table td {
+    border-bottom-color: var(--border-color);
+}
