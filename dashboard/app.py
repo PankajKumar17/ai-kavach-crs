@@ -666,7 +666,13 @@ async def stream_engine(
             future = loop.run_in_executor(None, _run_proc)
 
             while True:
-                line = await q.get()
+                try:
+                    line = await asyncio.wait_for(q.get(), timeout=15.0)
+                except asyncio.TimeoutError:
+                    # Send an SSE comment as a heartbeat to prevent proxy timeouts
+                    yield ": keepalive\n\n"
+                    continue
+
                 if line is None:      # subprocess finished
                     break
                 if await request.is_disconnected():
