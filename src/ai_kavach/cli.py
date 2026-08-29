@@ -17,7 +17,7 @@ def main() -> int:
     # Load configuration to fail fast if ANTHROPIC_API_KEY is missing
     from ai_kavach.config import get_config
     try:
-        config = get_config()
+        get_config()
     except RuntimeError as e:
         print(f"Startup Error: {e}", file=sys.stderr)
         return 1
@@ -25,7 +25,7 @@ def main() -> int:
     if args.command == "run":
         print(f"Starting AI Kavach pipeline for target: {args.target}")
         print(f"Time budget: {args.time_budget} seconds, Run ID: {args.run_id}")
-        
+
         # Pipeline stages will be wired here as they are built
         print("Pipeline stages not yet implemented.")
         raise NotImplementedError("Pipeline stages are not yet built.")

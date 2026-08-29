@@ -1,4 +1,5 @@
 .venv/
+.venv-wsl/
 .env
 __pycache__/
 *.pyc
@@ -7,3 +8,21 @@ runs/*
 !runs/test_run/
 
 .vercel
+
+# Large/target files
+targets/*/source.zip
+targets/*/source/
+*.bin
+*.bat
+
+# Frontend build
+dashboard/frontend/node_modules/
+dashboard/frontend/dist/
+
+# Setup scripts
+setup-frontend.ps1
+setup-frontend.sh
+
+# IDE
+.idea/
+.vscode/

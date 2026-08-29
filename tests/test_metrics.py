@@ -7,7 +7,7 @@ from ai_kavach.metrics import BugResolutionRecord, generate_run_summary
 
 def test_generate_run_summary_math(tmp_path):
     """Test that the arithmetic in the summary generator is strictly correct."""
-    
+
     records = [
         # Bug 1: Resolved via LLM, 1000 tokens, 10 seconds
         BugResolutionRecord(
@@ -46,39 +46,39 @@ def test_generate_run_summary_math(tmp_path):
             peak_memory_mb=90.0
         )
     ]
-    
+
     # Hand-calculated expectations:
     # Total processed = 4
     # Total resolved = 3
     # Total tokens = 1500
     # Total time = 71.5
     # Peak memory = 150.0
-    
+
     # Tokens per verified patch (only resolved matter):
     # LLM (1000) + Template (0) + Cache (0) = 1000 / 3 = 333.333...
-    
+
     # Time per verified patch (only resolved matter):
     # LLM (10.0) + Template (1.0) + Cache (0.5) = 11.5 / 3 = 3.833...
-    
+
     # % resolved without LLM:
     # Template + Cache = 2 out of 3 resolved = 66.666...%
-    
+
     summary = generate_run_summary(records, "test_run_1", tmp_path)
-    
+
     assert summary.total_bugs_processed == 4
     assert summary.total_bugs_resolved == 3
     assert summary.total_tokens_used == 1500
     assert summary.total_time_s == 71.5
     assert summary.peak_memory_mb == 150.0
-    
+
     assert abs(summary.tokens_per_verified_patch - 333.33) < 0.1
     assert abs(summary.average_time_per_verified_patch_s - 3.83) < 0.1
     assert abs(summary.percent_resolved_without_llm - 66.66) < 0.1
-    
+
     # Check JSON output
     json_path = tmp_path / "test_run_1" / "summary.json"
     assert json_path.exists()
-    
+
     data = json.loads(json_path.read_text())
     assert data["total_bugs_resolved"] == 3
     assert data["total_tokens_used"] == 1500

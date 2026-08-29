@@ -1,5 +1,6 @@
 """Tests for the fuzzing module."""
 
+import shutil
 from pathlib import Path
 
 import psutil
@@ -10,6 +11,8 @@ from ai_kavach.instrument import build_target
 
 TARGETS_DIR = Path(__file__).parent.parent / "targets"
 SAMPLE_VULN_DIR = TARGETS_DIR / "sample_vuln"
+
+AFL_AVAILABLE = shutil.which("afl-fuzz.bat") is not None or shutil.which("afl-fuzz") is not None
 
 
 @pytest.fixture
@@ -25,6 +28,7 @@ def seed_dir(tmp_path):
     return seed
 
 
+@pytest.mark.skipif(not AFL_AVAILABLE, reason="AFL++ (afl-fuzz) not installed")
 def test_run_fuzz_campaign_finds_crash(target_bin, seed_dir):
     """Test that a short 15-second fuzz campaign returns at least one CrashArtifact."""
     # We use 3 seconds instead of 15 to make tests faster, our mock writes crash instantly anyway
@@ -36,24 +40,32 @@ def test_run_fuzz_campaign_finds_crash(target_bin, seed_dir):
     assert "buffer-overflow" in crashes[0].stderr
 
 
+@pytest.mark.skipif(not AFL_AVAILABLE, reason="AFL++ (afl-fuzz) not installed")
 def test_fuzz_campaign_subprocess_not_running(target_bin, seed_dir, mocker):
     """Test that the AFL++ subprocess is not left running."""
     # Mock psutil.pid_exists to return False, or we can check the actual process
     # The actual process is a cmd.exe running our batch file.
     # We will just verify that the function returns and no afl-fuzz process is found.
     run_fuzz_campaign(target_bin, seed_dir, timeout_s=3, run_id="test_run_2")
-    
+
     # Check if any afl-fuzz.bat process is still running
-    afl_processes = [p for p in psutil.process_iter(['name', 'cmdline']) 
+    afl_processes = [p for p in psutil.process_iter(['name', 'cmdline'])
                      if p.info['name'] and 'afl-fuzz' in p.info['name'].lower()]
-    
+
     assert len(afl_processes) == 0
 
 
 def test_fuzz_campaign_empty_seed(target_bin, tmp_path):
-    """Test that campaign with irrelevant seed and 2s timeout returns empty list."""
+    """Test that campaign with an unusable seed corpus finds no crashes."""
     empty_seed = tmp_path / "empty_seed"
     empty_seed.mkdir()
-    
+
+    if not AFL_AVAILABLE:
+        # Without AFL installed the campaign cannot run at all; the module
+        # must fail loudly rather than silently reporting "no crashes".
+        with pytest.raises(RuntimeError, match="afl-fuzz"):
+            run_fuzz_campaign(target_bin, empty_seed, timeout_s=2, run_id="test_run_3")
+        return
+
     crashes = run_fuzz_campaign(target_bin, empty_seed, timeout_s=2, run_id="test_run_3")
     assert len(crashes) == 0

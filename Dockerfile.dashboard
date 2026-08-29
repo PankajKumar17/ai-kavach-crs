@@ -2,17 +2,24 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy requirements
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl && rm -rf /var/lib/apt/lists/*
+
+# Copy and install Python dependencies
 COPY pyproject.toml .
-# Normally we would install hatchling and build, but for simplicity we can just pip install the required libs
-RUN pip install --no-cache-dir fastapi uvicorn pydantic
+RUN pip install --no-cache-dir fastapi uvicorn pydantic python-dotenv requests anthropic openai
 
-# Copy the dashboard code
+# Copy full source
+COPY src/ /app/src/
 COPY dashboard/ /app/dashboard/
+COPY rules/ /app/rules/
+COPY runs/ /app/runs/
+COPY targets/ /app/targets/
+COPY engine/ /app/engine/
 
-# Setup some dummy run data
-RUN mkdir -p /app/runs/example_run
-RUN echo '{"total_bugs_processed": 10, "total_bugs_resolved": 8, "tokens_per_verified_patch": 1200.5, "average_time_per_verified_patch_s": 45.2, "percent_resolved_without_llm": 25.0, "total_tokens_used": 10000, "total_time_s": 500.0, "peak_memory_mb": 150.0}' > /app/runs/example_run/summary.json
+# Create directories for uploads and new runs at runtime
+RUN mkdir -p /app/runs /app/targets
 
 ENV PYTHONPATH=/app
 EXPOSE 8000

@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def get_user_data(username):
     """
     VULNERABLE FUNCTION: Retrieves user data from the database.
@@ -7,7 +8,7 @@ def get_user_data(username):
     """
     conn = sqlite3.connect(':memory:')
     cursor = conn.cursor()
-    
+
     # Setup dummy data
     cursor.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, secret TEXT)")
     cursor.execute("INSERT INTO users (username, secret) VALUES ('admin', 'super_secret_admin_key')")
@@ -15,10 +16,10 @@ def get_user_data(username):
     conn.commit()
 
     # Vulnerability: Direct string formatting without parameterization
-    query = "SELECT * FROM users WHERE username = ?"
-    
+    query = f"SELECT * FROM users WHERE username = '{username}'"
+
     try:
-        cursor.execute(query, (username,))
+        cursor.execute(query)
         result = cursor.fetchall()
         return result
     except Exception as e:

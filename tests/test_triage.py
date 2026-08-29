@@ -17,7 +17,7 @@ READ of size 4 at 0x602000000018 thread T0
     #2 0x40156a in main /path/to/project/src/main.c:150:12
 """
     crash_type, top_frames, file_path, line_number = parse_asan_trace(asan_output)
-    
+
     assert crash_type == "heap-buffer-overflow"
     assert len(top_frames) == 3
     assert top_frames[0] == "vulnerable_read"
@@ -38,7 +38,7 @@ def test_deduplicate_identical_stack_frames_different_addresses():
     #1 0x400020 in bar main.c:20
 """
     )
-    
+
     crash2 = CrashArtifact(
         input_path=Path("input2.txt"),
         exit_signal=11,
@@ -48,9 +48,9 @@ def test_deduplicate_identical_stack_frames_different_addresses():
     #1 0x500020 in bar main.c:20
 """
     )
-    
+
     bugs = deduplicate_crashes([crash1, crash2])
-    
+
     # Should dedupe to 1 bug
     assert len(bugs) == 1
     assert len(bugs[0].original_crashes) == 2
@@ -68,7 +68,7 @@ def test_no_deduplicate_different_root_cause():
     #0 0x400010 in foo vuln.c:10
 """
     )
-    
+
     crash2 = CrashArtifact(
         input_path=Path("input2.txt"),
         exit_signal=11,
@@ -77,9 +77,9 @@ def test_no_deduplicate_different_root_cause():
     #0 0x500010 in baz other.c:30
 """
     )
-    
+
     bugs = deduplicate_crashes([crash1, crash2])
-    
+
     # Should remain 2 bugs
     assert len(bugs) == 2
 
@@ -94,7 +94,7 @@ def test_severity_ranking():
     #0 0x400010 in assert_func assert.c:10
 """
     )
-    
+
     crash2 = CrashArtifact(
         input_path=Path("input2.txt"),
         exit_signal=11,
@@ -103,9 +103,9 @@ def test_severity_ranking():
     #0 0x500010 in overflow_func vuln.c:30
 """
     )
-    
+
     bugs = deduplicate_crashes([crash1, crash2])
-    
+
     # Should remain 2 bugs, but the buffer overflow should be first
     assert len(bugs) == 2
     assert bugs[0].crash_type == "stack-buffer-overflow"

@@ -14,7 +14,7 @@ void vulnerable_func(char *input) {
     strcpy(buffer, input);
 }
 """
-    
+
     bug = TriagedBug(
         crash_type="stack-buffer-overflow",
         top_frames=["vulnerable_func", "main"],
@@ -24,9 +24,9 @@ void vulnerable_func(char *input) {
         hash_signature="hash123",
         original_crashes=[]
     )
-    
+
     patch = try_template_fix(bug, source_code)
-    
+
     assert patch is not None
     assert patch.is_template_based is True
     assert "vuln.c" in str(patch.file_path)
@@ -49,8 +49,8 @@ void some_func(int *ptr) {
         hash_signature="hash123",
         original_crashes=[]
     )
-    
+
     patch = try_template_fix(bug, source_code)
-    
+
     # Should confidently return None instead of guessing
     assert patch is None

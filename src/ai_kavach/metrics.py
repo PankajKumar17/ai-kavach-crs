@@ -34,28 +34,28 @@ def generate_run_summary(records: list[BugResolutionRecord], run_id: str, output
     total_bugs = len(records)
     resolved_bugs = [r for r in records if r.resolved]
     total_resolved = len(resolved_bugs)
-    
+
     total_tokens = sum(r.llm_tokens_used for r in records)
     total_time = sum(r.wall_clock_time_s for r in records)
-    
+
     # Peak memory of any record in the run
     peak_memories = [r.peak_memory_mb for r in records if r.peak_memory_mb is not None]
     peak_memory = max(peak_memories) if peak_memories else 0.0
-    
+
     if total_resolved > 0:
         resolved_tokens = sum(r.llm_tokens_used for r in resolved_bugs)
         resolved_time = sum(r.wall_clock_time_s for r in resolved_bugs)
-        
+
         tokens_per_patch = resolved_tokens / total_resolved
         time_per_patch = resolved_time / total_resolved
-        
+
         non_llm_resolutions = [r for r in resolved_bugs if r.resolution_path in ("template", "cache")]
         percent_no_llm = (len(non_llm_resolutions) / total_resolved) * 100.0
     else:
         tokens_per_patch = 0.0
         time_per_patch = 0.0
         percent_no_llm = 0.0
-        
+
     summary = RunSummary(
         total_bugs_processed=total_bugs,
         total_bugs_resolved=total_resolved,
@@ -66,11 +66,11 @@ def generate_run_summary(records: list[BugResolutionRecord], run_id: str, output
         total_time_s=total_time,
         peak_memory_mb=peak_memory
     )
-    
+
     run_dir = output_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
     summary_path = run_dir / "summary.json"
-    
+
     summary_path.write_text(json.dumps(asdict(summary), indent=2))
-    
+
     return summary
