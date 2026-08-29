@@ -18,7 +18,8 @@ dependencies = [
     "requests",
     "fastapi",
     "uvicorn",
-    "python-dotenv"
+    "python-dotenv",
+    "python-multipart"
 ]
 
 [tool.hatch.build.targets.wheel]
