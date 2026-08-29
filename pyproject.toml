@@ -35,3 +35,6 @@ select = ["E", "F", "W", "I", "B", "UP"]
 testpaths = ["tests"]
 addopts = "-q"
 
+
+[tool.pyright]
+extraPaths = ["."]
