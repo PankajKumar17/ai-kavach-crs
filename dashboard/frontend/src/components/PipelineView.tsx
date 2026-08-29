@@ -786,8 +786,8 @@ export function PipelineView({ target, runId, onBack, onReanalyze, initialSummar
               {/* Overview Metrics */}
               <div className="pt-6 border-t border-gray-100 dark:border-white/[0.04] grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Time to detect', value: `${(summary.average_time_per_verified_patch_s / 2).toFixed(1)}s`, color: 'text-blue-500 dark:text-blue-400' },
-                  { label: 'Time to resolve', value: `${summary.average_time_per_verified_patch_s.toFixed(1)}s`, color: 'text-violet-500 dark:text-violet-400' },
+                  { label: 'Time to detect', value: `${((summary.average_time_per_verified_patch_s || 0) / 2).toFixed(1)}s`, color: 'text-blue-500 dark:text-blue-400' },
+                  { label: 'Time to resolve', value: `${(summary.average_time_per_verified_patch_s || 0).toFixed(1)}s`, color: 'text-violet-500 dark:text-violet-400' },
                   { label: 'Auto-patched', value: `${successRate}%`, color: 'text-amber-500 dark:text-amber-400' },
                   { label: 'Duration', value: `${summary.total_time_s ? summary.total_time_s.toFixed(1) : elapsed}s`, color: 'text-gray-900 dark:text-white' }
                 ].map(m => (
