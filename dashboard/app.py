@@ -591,7 +591,8 @@ async def stream_engine(
         if target_id not in _targets_db:
             # Return error as SSE so frontend sees the message
             async def _not_found():
-                yield f"data: {json.dumps({'line': f'[ERROR] Target \"{target_id}\" not found. Please re-upload your target.'})}\n\n"
+                err_msg = f'[ERROR] Target "{target_id}" not found. Please re-upload your target.'
+                yield f"data: {json.dumps({'line': err_msg})}\n\n"
                 yield f"event: complete\ndata: {json.dumps({'status': 'error', 'run_id': run_id, 'summary': {}})}\n\n"
             return StreamingResponse(_not_found(), media_type="text/event-stream",
                                      headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
