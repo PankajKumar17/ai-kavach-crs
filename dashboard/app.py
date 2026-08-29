@@ -621,7 +621,7 @@ async def stream_engine(
         "--run-id", run_id,
         "--runs-dir", str(RUNS_DIR),
     ]
-    env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUNBUFFERED": "1"}
 
     logger.info("[SSE] Starting pipeline: %s", " ".join(cmd))
 
@@ -633,31 +633,34 @@ async def stream_engine(
 
         def _run_proc():
             """Runs in a thread so blocking Popen.readline() doesn't block the event loop."""
-            proc = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=str(DASHBOARD_DIR.parent),
-                env=env,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-            )
-            # Stream stdout line-by-line into the async queue
-            for raw in proc.stdout:  # type: ignore[union-attr]
-                asyncio.run_coroutine_threadsafe(q.put(raw.rstrip()), loop)
-            proc.wait()
-            rc_holder.append(proc.returncode)
+            try:
+                proc = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=str(DASHBOARD_DIR.parent),
+                    env=env,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
+                # Stream stdout line-by-line into the async queue
+                for raw in proc.stdout:  # type: ignore[union-attr]
+                    asyncio.run_coroutine_threadsafe(q.put(raw.rstrip()), loop)
+                proc.wait()
+                rc_holder.append(proc.returncode)
 
-            # On failure: pipe stderr so the terminal shows it
-            if proc.returncode != 0 and proc.stderr:
-                for sline in proc.stderr.read().splitlines():
-                    if sline.strip():
-                        asyncio.run_coroutine_threadsafe(
-                            q.put(f"[STDERR] {sline}"), loop
-                        )
-
-            asyncio.run_coroutine_threadsafe(q.put(None), loop)  # sentinel
+                # On failure: pipe stderr so the terminal shows it
+                if proc.returncode != 0 and proc.stderr:
+                    for sline in proc.stderr.read().splitlines():
+                        if sline.strip():
+                            asyncio.run_coroutine_threadsafe(
+                                q.put(f"[STDERR] {sline}"), loop
+                            )
+            except Exception as e:
+                asyncio.run_coroutine_threadsafe(q.put(f"[ERROR] Process failed to start: {e}"), loop)
+            finally:
+                asyncio.run_coroutine_threadsafe(q.put(None), loop)  # sentinel
 
         try:
             future = loop.run_in_executor(None, _run_proc)
