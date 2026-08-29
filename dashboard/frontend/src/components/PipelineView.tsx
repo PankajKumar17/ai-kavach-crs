@@ -535,9 +535,15 @@ export function PipelineView({ target, runId, onBack, onReanalyze, initialSummar
       if (timerRef.current) clearInterval(timerRef.current);
     };
 
+    // Keep-alive ping for free-tier hosts (like Render) that kill apps after 15m of no *new* requests
+    const keepAliveInterval = setInterval(() => {
+      fetch(`${API_BASE}/health`).catch(() => {});
+    }, 60000);
+
     return () => {
       es.close();
       if (timerRef.current) clearInterval(timerRef.current);
+      clearInterval(keepAliveInterval);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
