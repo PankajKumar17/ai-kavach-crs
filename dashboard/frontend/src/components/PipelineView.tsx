@@ -483,7 +483,8 @@ export function PipelineView({ target, runId, onBack, onReanalyze, initialSummar
       return;
     }
 
-    const url = `${API_BASE}/api/engine/stream?target_id=${encodeURIComponent(target.id)}&run_id=${encodeURIComponent(runId)}`;
+    const token = import.meta.env.VITE_ENGINE_AUTH_TOKEN;
+    const url = `${API_BASE}/api/engine/stream?target_id=${encodeURIComponent(target.id)}&run_id=${encodeURIComponent(runId)}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
     const es = new EventSource(url);
     esRef.current = es;
     startRef.current = Date.now();

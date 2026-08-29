@@ -241,15 +241,15 @@ def _require_engine_auth(request: Request):
     """
     Gate for /api/engine/start: it rewrites source files and spawns the
     engine subprocess, so it must never be publicly callable. When
-    ENGINE_AUTH_TOKEN is set, a matching Bearer token is required. When
-    unset, only loopback requests are allowed (local demo default).
-    Note: Vite dev proxy at localhost adds x-forwarded-for, so we check
-    the x-forwarded-for value itself to see if it's a loopback address.
+    ENGINE_AUTH_TOKEN is set, a matching Bearer token or ?token= query parameter is required.
+    When unset, only loopback requests are allowed (local demo default).
     """
     expected = os.environ.get("ENGINE_AUTH_TOKEN")
     auth = request.headers.get("Authorization", "")
+    token_param = request.query_params.get("token", "")
+    
     if expected:
-        if auth != f"Bearer {expected}":
+        if auth != f"Bearer {expected}" and token_param != expected:
             raise HTTPException(status_code=401, detail="Invalid or missing engine auth token.")
         return
 
