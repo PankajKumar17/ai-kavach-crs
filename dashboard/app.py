@@ -12,7 +12,18 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="AI Kavach Dashboard")
+
+# Enable CORS for frontend running on different domains (e.g. Vercel)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Ensure dashboard static directory exists
 DASHBOARD_DIR = Path(__file__).parent

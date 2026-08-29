@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { RunSummary, Vulnerability } from '../types';
-import { TargetCodebase, applyPatch } from '../api';
+import { TargetCodebase, applyPatch, API_BASE } from '../api';
 import {
   CommandLineIcon, CheckCircleIcon, XCircleIcon, ClockIcon,
   ShieldExclamationIcon, WrenchScrewdriverIcon, ChartBarIcon,
@@ -483,7 +483,7 @@ export function PipelineView({ target, runId, onBack, onReanalyze, initialSummar
       return;
     }
 
-    const url = `/api/engine/stream?target_id=${encodeURIComponent(target.id)}&run_id=${encodeURIComponent(runId)}`;
+    const url = `${API_BASE}/api/engine/stream?target_id=${encodeURIComponent(target.id)}&run_id=${encodeURIComponent(runId)}`;
     const es = new EventSource(url);
     esRef.current = es;
     startRef.current = Date.now();

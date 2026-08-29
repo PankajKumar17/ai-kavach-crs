@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_BASE } from '../api';
 import {
   FolderIcon, MagnifyingGlassIcon, CpuChipIcon, BeakerIcon,
   WrenchScrewdriverIcon, FunnelIcon, BugAntIcon, CheckBadgeIcon,
@@ -104,7 +105,7 @@ export function EngineArchitecture() {
   const [error, setError]     = useState('');
 
   useEffect(() => {
-    fetch('/api/engine/modules')
+    fetch(`${API_BASE}/api/engine/modules`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(e => { setError(String(e)); setLoading(false); });
