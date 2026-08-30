@@ -19,7 +19,8 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "python-dotenv",
-    "python-multipart"
+    "python-multipart",
+    "semgrep"
 ]
 
 [tool.hatch.build.targets.wheel]
