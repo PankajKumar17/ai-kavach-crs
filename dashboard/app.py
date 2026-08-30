@@ -86,7 +86,10 @@ def _load_targets():
             if meta_file.exists():
                 try:
                     data = json.loads(meta_file.read_text())
-                    _targets_db[data["id"]] = TargetCodebase(**data)
+                    target = TargetCodebase(**data)
+                    # Dynamically resolve path to support targets checked into cross-platform git
+                    target.path = str(target_dir / "source")
+                    _targets_db[target.id] = target
                 except Exception:
                     pass
 
